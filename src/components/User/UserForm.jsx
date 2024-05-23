@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { AppBar, Button, Card, CardActions, CardContent, CardMedia, CssBaseline, Grid, Typography, Drawer, List, ListItem, ListItemSecondaryAction, ListItemText, Badge, Divider, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,17 +16,20 @@ const UserForm = () => {
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
-    const userId = 2222; // 예시로 사용할 사용자 ID
+    const userId = 3333; // 예시로 사용할 사용자 ID
     ProductsByUserId(userId)
       .then(data => {
-        setCards(data.map(item => ({
-          id: item[0], // API 응답에 따라 필드명을 확인하고 수정해야 할 수 있습니다.
-          description: item[4],
-          title: item[5],
-          price: item[6],
-          image: item.image,
-          editable: false
-        })));
+        setCards(data.map(item => {
+          const imagePath = item[7].split('\\').pop(); // 파일명만 추출
+          return {
+            id: item[0], // API 응답에 따라 필드명을 확인하고 수정해야 할 수 있습니다.
+            description: item[4],
+            title: item[5],
+            price: item[6],
+            image: `/images/${imagePath}`, // 서버의 이미지 경로로 설정
+            editable: false
+          };
+        }));
       })
       .catch(error => console.error('Error loading products:', error));
   }, []);
@@ -54,7 +60,7 @@ const UserForm = () => {
 
   const handleCheckout = () => {
     console.log('Proceeding to checkout');
-    alert(`Proceeding to checkout... Total: ${totalPrice}원`);
+    alert(`Proceeding to checkout... 총합: ${totalPrice}원`);
   };
 
   const updateTotalPrice = (currentCart) => {
