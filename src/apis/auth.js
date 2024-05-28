@@ -2,7 +2,7 @@
 import api from "./api";
 
 // 회원가입
-export const join = (LoginId, password, UserName, Email) => {return api.post("/join",
+export const join = (LoginId, password, UserName, Email) => {return api.post("/admin/join",
     {
         "loginId":LoginId,
         "password":password,
@@ -34,7 +34,7 @@ export const join = (LoginId, password, UserName, Email) => {return api.post("/j
 // export const login = (loginId, password) => api.post(`/login?username=${loginId}&password=${password}`, );
 export const login = async (loginId, password) =>{ 
     try {
-    const response = await api.post('/login', {
+    const response = await api.post('/admin/login', {
         "loginId": loginId,
         "password": password
     });
@@ -94,7 +94,7 @@ export const pw = (userName,userId ,email)=> {return api.get('/users/pw',
     })
 };
 
-export const AI = () => {return api.post('/users/ai')}
+// export const AI = () => {return api.post('/users/ai')}
 
 export const ProductsByUserId = () => {return api.post("/user/kioskpage",
     {
@@ -154,7 +154,7 @@ export const update = (data) => api.put("/users", data)
 export const remove = (userId) => api.delete(`/users/${userId}`)
 
 
-export const logout = () => api.post("/logout")
+export const logout = () => api.post("/admin/logout")
 
 export const session = () => api.get("/users/session")
 

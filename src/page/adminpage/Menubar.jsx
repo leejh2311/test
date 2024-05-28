@@ -1,16 +1,12 @@
 import React from 'react'
-// import Header from '../components/Header/Header'
+import Header from '../../components/AdminHeader/Header'
 import MenubarForm from '../../components/Menubar/MenubarForm'
-import Home from '../adminpage/Home';
-
 
 const MenuBar = () => {
   return (
     <>
-        <Home/>
-        <div className='container'>
-            <MenubarForm />
-        </div>
+      <Header/>
+      <MenubarForm />
     </>
   )
 }

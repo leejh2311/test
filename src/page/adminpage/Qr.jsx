@@ -1,16 +1,12 @@
 import React from 'react'
-// import Header from '../components/Header/Header'
-import QRForm from '../../components/QR/QRForm'
-import Home from '../adminpage/Home';
-
+import QrForm from '../../components/QR/QrForm'
+import Header from '../../components/AdminHeader/Header'
 
 const QR = () => {
   return (
     <>
-        <Home/>
-        <div className='container'>
-            <QRForm/>
-        </div>
+      <Header/>
+      <QrForm/>
     </>
   )
 }
