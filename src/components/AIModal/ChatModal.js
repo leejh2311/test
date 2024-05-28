@@ -9,11 +9,11 @@ import {
   CircularProgress,
   Box,
 } from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
 import MicIcon from '@mui/icons-material/Mic';
 import axios from "axios";
 import ChatBubble from "./ChatBubble"; // ChatBubble 컴포넌트 임포트
 import BudgetModal from "./BudgetModal"; // 예산 입력 모달 컴포넌트 임포트
+import useSpeechRecognition from "./useSpeechRecognition"; // 음성 인식 훅 임포트
 
 const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const [messages, setMessages] = useState([]);
@@ -32,7 +32,14 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       setIsFirstInteraction(false);
       startTypingAnimation("안녕하세요! AI 도우미입니다. 무엇을 도와드릴까요?");
     }
-  }, [open, isFirstInteraction]);
+  }, [open, isFirstInteraction, startTypingAnimation]);
+
+  useEffect(() => {
+    if (open) {
+      // 음성 인식을 시작합니다.
+      startSpeechRecognition();
+    }
+  }, [open]);
 
   const startTypingAnimation = (text) => {
     setIsTyping(true);
@@ -182,35 +189,25 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
     }
   };
 
-  const handleVoiceInput = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert('음성 인식을 지원하지 않는 브라우저입니다.');
-      return;
-    }
-
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = 'ko-KR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.start();
-
-    recognition.onresult = (event) => {
-      const speechResult = event.results[0][0].transcript;
+  const { startSpeechRecognition } = useSpeechRecognition(
+    (speechResult) => {
       const finalMessage = awaitingItemInput ? `${speechResult} 담아줘.` : speechResult;
       setNewMessage(finalMessage);
       handleSendMessage(finalMessage);
-    };
-
-    recognition.onerror = (event) => {
+    },
+    (event) => {
       console.error('Speech recognition error', event);
-    };
-  };
+    }
+  );
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        setMessages([]); // 대화 내용 초기화
+        setIsFirstInteraction(true); // 첫 상호작용 상태로 되돌리기
+        onClose();
+      }}
       fullWidth
       maxWidth="sm"
       PaperProps={{
@@ -270,15 +267,12 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
           style={{ flex: 1, marginRight: "8px" }}
         />
         <Button
-          onClick={() => handleSendMessage(newMessage)}
+          onClick={() => startSpeechRecognition()}
           color="primary"
           variant="contained"
-          endIcon={<SendIcon />}
-          style={{ height: "100%" }}
+          endIcon={<MicIcon />}
+          style={{ marginLeft: "8px" }}
         >
-          보내기
-        </Button>
-        <Button onClick={handleVoiceInput} color="primary" variant="contained" endIcon={<MicIcon />} style={{ marginLeft: "8px" }}>
           음성 입력
         </Button>
         <Button onClick={onClose} color="primary" style={{ marginLeft: "8px" }}>
