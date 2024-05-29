@@ -8,12 +8,15 @@ import {
   Button,
   CircularProgress,
   Box,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
 import axios from "axios";
 import ChatBubble from "./ChatBubble";
 import BudgetModal from "./BudgetModal";
 import useSpeechRecognition from "./useSpeechRecognition";
+import './ChatModal.css';
 
 const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const [messages, setMessages] = useState([]);
@@ -25,6 +28,9 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [awaitingItemInput, setAwaitingItemInput] = useState(false);
   const userId = 2222;
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
     startSpeechRecognition,
@@ -235,20 +241,19 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
         stopSpeechRecognition();
         onClose();
       }}
-      fullWidth
-      maxWidth="sm"
+      fullScreen={fullScreen}
       PaperProps={{
         style: {
-          minHeight: "700px",
-          maxHeight: "700px",
-          minWidth: "500px",
-          maxWidth: "500px",
+          backgroundColor: '#f4eedd',
+          borderRadius: '15px',
         },
       }}
     >
-      <DialogTitle>{"AI 도우미 채팅"}</DialogTitle>
+      <DialogTitle className="dialog-title">
+        {"AI 도우미 채팅"}
+      </DialogTitle>
       <DialogContent style={{ padding: 0 }}>
-        <Box style={{ height: "500px", overflowY: "auto", padding: "16px" }}>
+        <Box style={{ height: "auto", overflowY: "auto", padding: "16px" }}>
           {messages.map((message, index) => (
             <Box
               key={index}
@@ -275,7 +280,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
           )}
         </Box>
       </DialogContent>
-      <DialogActions style={{ display: "flex", alignItems: "center" }}>
+      <DialogActions className="dialog-actions"style={{ backgroundColor: '#fff' }}>
         <TextField
           autoFocus
           margin="dense"
@@ -291,18 +296,22 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
               handleSendMessage(newMessage);
             }
           }}
-          style={{ flex: 1, marginRight: "8px" }}
+          className="text-field"
         />
         <Button
           onClick={startSpeechRecognition}
-          color="primary"
           variant="contained"
+          color="secondary"
+          className="button-contained-secondary"
           endIcon={<MicIcon />}
-          style={{ marginLeft: "8px" }}
         >
           음성 입력
         </Button>
-        <Button onClick={onClose} color="primary" style={{ marginLeft: "8px" }}>
+        <Button onClick={onClose}
+          variant="contained"
+          color="secondary" 
+          className="button-contained-secondary"
+        >
           닫기
         </Button>
       </DialogActions>
