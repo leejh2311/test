@@ -16,7 +16,7 @@ import axios from "axios";
 import ChatBubble from "./ChatBubble";
 import BudgetModal from "./BudgetModal";
 import useSpeechRecognition from "./useSpeechRecognition";
-import './ChatModal.css';
+import "./ChatModal.css";
 
 const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const [messages, setMessages] = useState([]);
@@ -30,7 +30,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const userId = 2222;
 
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const {
     startSpeechRecognition,
@@ -100,6 +100,16 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
     restartSpeechRecognition();
   };
 
+  const speak = (text) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ko-KR"; // 한국어 설정
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.error("TTS is not supported in this browser.");
+    }
+  };
+
   const handleSendMessage = async (
     messageText,
     messageId = null,
@@ -147,6 +157,9 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       const response = await axios.post(endpoint, requestData);
       const aiMessage = { text: response.data.message, sender: "ai" };
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
+
+      // AI 응답을 음성으로 출력
+      speak(response.data.message);
 
       if (
         endpoint === "http://localhost:8000/users/addToCart" &&
@@ -244,14 +257,12 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       fullScreen={fullScreen}
       PaperProps={{
         style: {
-          backgroundColor: '#f4eedd',
-          borderRadius: '15px',
+          backgroundColor: "#f4eedd",
+          borderRadius: "15px",
         },
       }}
     >
-      <DialogTitle className="dialog-title">
-        {"AI 도우미 채팅"}
-      </DialogTitle>
+      <DialogTitle className="dialog-title">{"AI 도우미 채팅"}</DialogTitle>
       <DialogContent style={{ padding: 0 }}>
         <Box style={{ height: "auto", overflowY: "auto", padding: "16px" }}>
           {messages.map((message, index) => (
@@ -280,7 +291,10 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
           )}
         </Box>
       </DialogContent>
-      <DialogActions className="dialog-actions"style={{ backgroundColor: '#fff' }}>
+      <DialogActions
+        className="dialog-actions"
+        style={{ backgroundColor: "#fff" }}
+      >
         <TextField
           autoFocus
           margin="dense"
@@ -307,9 +321,10 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
         >
           음성 입력
         </Button>
-        <Button onClick={onClose}
+        <Button
+          onClick={onClose}
           variant="contained"
-          color="secondary" 
+          color="secondary"
           className="button-contained-secondary"
         >
           닫기
