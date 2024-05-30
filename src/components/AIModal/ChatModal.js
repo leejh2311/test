@@ -472,10 +472,10 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
 
     try {
       const endpoint = awaitingItemInput
-        ? "http://localhost:8000/users/addToCart"
+        ? "http://61.81.99.104:8000/users/addToCart"
         : messageText === "ex)장바구니에 있는 물건들 결제해줘."
-        ? "http://localhost:8000/users/paymentAPI"
-        : "http://localhost:8000/users/ai";
+        ? "http://61.81.99.104:8000/users/paymentAPI"
+        : "http://61.81.99.104:8000/users/ai";
 
       const requestData = awaitingItemInput
         ? { user_id: userId, items: userMessage.items }
@@ -486,7 +486,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
 
       if (
-        endpoint === "http://localhost:8000/users/addToCart" &&
+        endpoint === "http://61.81.99.104:8000/users/addToCart" &&
         response.data.items
       ) {
         const productDetails = response.data.items.map((item) => ({
