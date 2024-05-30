@@ -367,6 +367,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
   const [typingText, setTypingText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [awaitingItemInput, setAwaitingItemInput] = useState(false);
+  const [handledOnce, setHandledOnce] = useState(false);
   const userId = 2222;
 
   const {
@@ -375,11 +376,18 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
     restartSpeechRecognition,
   } = useSpeechRecognition(
     (speechResult) => {
-      const finalMessage = awaitingItemInput
-        ? `${speechResult} 담아줘.`
-        : speechResult;
-      setNewMessage(finalMessage);
-      handleSendMessage(finalMessage);
+      if (speechResult === "장바구니에 물건을 담고 싶어") {
+        if (!handledOnce) {
+          handleMessageClick({ text: "ex)장바구니에 물건을 담고 싶어" });
+          setHandledOnce(true);
+        }
+      } else {
+        const finalMessage = awaitingItemInput
+          ? `${speechResult} 담아줘.`
+          : speechResult;
+        setNewMessage(finalMessage);
+        handleSendMessage(finalMessage);
+      }
     },
     (event) => {
       console.error("Speech recognition error", event);
@@ -416,11 +424,11 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
 
   const showNextMessages = () => {
     const predefinedMessages = [
-      "ex)오늘 날씨에 맞는 메뉴를 추천해줘.",
-      "ex)김치찌개에 대해서 설명해줘.",
-      "ex)예산에 맞는 메뉴를 추천해줘.",
+      "ex)오늘 날씨에 맞는 메뉴를 추천해 줘.",
+      "ex)김치찌개에 대해서 설명해 줘.",
+      "ex)예산에 맞는 메뉴를 추천해 줘.",
       "ex)다른 명령어는 뭐가 있어?",
-      "ex)장바구니에 물건을 담고 싶어",
+      "ex)장바구니에 물건을 담고 싶어.",
     ];
 
     setMessages((prevMessages) => [
@@ -455,7 +463,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
     };
 
     if (awaitingItemInput) {
-      const items = [messageText.replace(" 담아줘.", "").trim()];
+      const items = [messageText.replace(" 담아 줘", "").trim()];
       const addToCartRequest = {
         user_id: userId,
         items: items,
@@ -473,7 +481,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
     try {
       const endpoint = awaitingItemInput
         ? "http://61.81.99.104:8000/users/addToCart"
-        : messageText === "ex)장바구니에 있는 물건들 결제해줘."
+        : messageText === "ex)장바구니에 있는 물건들 결제해 줘."
         ? "http://61.81.99.104:8000/users/paymentAPI"
         : "http://61.81.99.104:8000/users/ai";
 
@@ -484,6 +492,10 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       const response = await axios.post(endpoint, requestData);
       const aiMessage = { text: response.data.message, sender: "ai" };
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
+
+      // TTS로 응답 메시지 읽기
+      const utterance = new SpeechSynthesisUtterance(response.data.message);
+      window.speechSynthesis.speak(utterance);
 
       if (
         endpoint === "http://61.81.99.104:8000/users/addToCart" &&
@@ -531,11 +543,11 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       setMessages([]);
       setTimeout(() => {
         const otherCommands = [
-          "ex)오늘 날씨에 맞는 메뉴를 추천해줘.",
-          "ex)김치찌개에 대해서 설명해줘.",
-          "ex)예산에 맞는 메뉴를 추천해줘.",
-          "ex)장바구니에 있는 물건들 결제해줘.",
-          "ex)된장찌게 장바구니에 담아줘",
+          "ex)오늘 날씨에 맞는 메뉴를 추천해 줘.",
+          "ex)김치찌개에 대해서 설명해 줘",
+          "ex)예산에 맞는 메뉴를 추천해 줘.",
+          "ex)장바구니에 있는 물건들 결제해 줘.",
+          "ex)된장찌게 장바구니에 담아 줘.",
         ];
 
         setMessages(
@@ -546,7 +558,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
           }))
         );
       }, 500);
-    } else if (message.text === "ex)장바구니에 물건을 담고 싶어") {
+    } else if (message.text === "ex)장바구니에 물건을 담고 싶어" || message.text === "장바구니에 물건을 담고 싶어") {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -556,6 +568,7 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
         },
       ]);
       setAwaitingItemInput(true);
+      setHandledOnce(false); // 플래그 리셋
     } else {
       handleSendMessage(message.text, message.id_Value);
     }
@@ -568,6 +581,23 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
       stopSpeechRecognition();
     }
   }, [open, startSpeechRecognition, stopSpeechRecognition]);
+
+  useEffect(() => {
+    console.log("useEffect 실행", awaitingItemInput);
+    if (awaitingItemInput) {
+      console.log("awaitingItemInput 시작");
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          text: "장바구니에 물건을 담는 것을 도와드릴께요! 어떤 물건을 담을까요?",
+          sender: "ai",
+          clickable: false,
+        },
+      ]);
+    } else {
+      setHandledOnce(false); // 플래그 리셋
+    }
+  }, [awaitingItemInput]);
 
   return (
     <Dialog
@@ -659,5 +689,3 @@ const ChatModal = ({ open, onClose, cart, totalAmount, setCart }) => {
 };
 
 export default ChatModal;
-
-
